@@ -21,8 +21,8 @@ plugins {
     `java`
 }
 
-// Set to false to disable proguard run on kotlin-compiler.jar. Speeds up the build
-val shrink = true
+val shrink = findProperty("kotlin.build.proguard")?.toString()?.toBoolean() == true
+
 val compilerManifestClassPath =
         "kotlin-stdlib.jar kotlin-reflect.jar kotlin-script-runtime.jar"
 
@@ -121,11 +121,12 @@ noDefaultJar()
 
 cleanArtifacts()
 
-dist(targetName = compilerBaseName + ".jar",
-     fromTask = if (shrink) proguard
-                else packCompiler)
+val pack = if (shrink) proguard else packCompiler
 
-runtimeJarArtifactBy(proguard, proguard.outputs.files.singleFile) {
+dist(targetName = compilerBaseName + ".jar",
+     fromTask = pack)
+
+runtimeJarArtifactBy(pack, pack.outputs.files.singleFile) {
     name = compilerBaseName
     classifier = ""
 }
